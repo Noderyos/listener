@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	int rate = SAMPLE_RATE, channels = 1;
 
 	if (argc > 1)
-		error_exit("Usage: %s device\n", argv[0]);
+		error_exit("Usage: %s\n", argv[0]);
 
 	/* load configfile */
         fh = fopen(configfile, "rb");
