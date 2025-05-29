@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <dlfcn.h>
-#include "alsa.h"
+#include "pulse.h"
 #include "listener.h"
 #include "error.h"
 #include "utils.h"
@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
 {
 	WINDOW *win;
 	snd_pcm_t *pcm_handle;
-	char *pcm_name = "hw:1";
 	int level = 0, prevlevel = -1;
 	int detect_level = 0;
 	char *configfile = CONFIGFILE;
@@ -54,14 +53,7 @@ int main(int argc, char *argv[])
 	int buffer_size, rc;
 	int rate = SAMPLE_RATE, channels = 1;
 
-	/* determine device to open */
 	if (argc > 1)
-	{
-		pcm_name = argv[1];
-		if (argc > 2)
-			configfile = argv[2];
-	}
-	else if (argc > 3)
 		error_exit("Usage: %s device\n", argv[0]);
 
 	/* load configfile */
@@ -170,7 +162,7 @@ int main(int argc, char *argv[])
 	mvwprintw(win, 22, 42, "(C) 2003-2010 folkert@vanheusden.com");
 
 	/* open audio-device */
-	pcm_handle = init_alsa(pcm_name, &rate, channels);
+	pcm_handle = init_pulse(rate, channels);
 
         /* initialize filters */
         for(loop=0; loop<n_filter_lib; loop++)

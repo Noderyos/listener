@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 ssize_t READ(int fd, char *whereto, size_t len);
 ssize_t WRITE(int fd, char *wherefrom, size_t len);
 char * read_line(FILE *fh);

@@ -17,7 +17,7 @@ extern char *optarg;
 
 #include <sndfile.h>
 
-#include "alsa.h"
+#include "pulse.h"
 #include "listener.h"
 #include "error.h"
 #include "utils.h"
@@ -39,7 +39,7 @@ char *on_event_start = NULL;				/* what to exec when the recording starts */
 char amplify = 1;					/* default amplify is on */
 double start_amplify = 1.0;				/* start factor */
 double max_amplify = 2.0;				/* maximum amplify factor */
-char do_not_fork = 0;					/* wether to fork into the background or not */
+char do_not_fork = 1; /* break pulse */ /* wether to fork into the background or not */
 int pr_n_seconds = 2;					/* number of seconds to record before the sound starts */
 int silent = 0;						/* be silent on stdout? */
 char fixed_ampl_fact = 0;				/* use fixed amplification factor? */
@@ -536,12 +536,11 @@ int main(int argc, char *argv[])
 	char	show_help = 0;
 	char	from_pipe = 0;
 	char	set_from_pipe = 0, set_sample_rate = 0, set_detect_level = 0, set_max_duration = 0, set_rec_silence = 0, 
-		set_min_duration = 0, set_compression = 0, set_exec = 0, set_dev_name = 0, set_wav_path = 0, set_channels = 0,
+		set_min_duration = 0, set_compression = 0, set_exec = 0, set_wav_path = 0, set_channels = 0,
 		set_format = 0, set_faf = 0, set_on_event_start = 0, set_pidfile = 0, set_one_shot = 0, set_output_pipe = 0;
 	int	loop;
 	FILE	*fh;
 	snd_pcm_t	*pcm_handle;
-	char	*pcm_name = "hw:0";
 	int	sample_rate = SAMPLE_RATE;				/* speaks for itself */
 	char	channels = 1;					/* mono or stereo */
 	/* right now I'm not sure if a short is always 2 bytes. check this on your
@@ -573,11 +572,6 @@ int main(int argc, char *argv[])
 			wav_path = optarg;
 			set_wav_path = 1;
 		 	break;
-
-		  case 'd':	/* Device */
-			pcm_name = optarg;
-			set_dev_name = 1;
-			break;
 
 		  case 'b':	/* rec_silence */
 			rec_silence = atof(optarg);
@@ -739,11 +733,6 @@ int main(int argc, char *argv[])
 		{
 			if (!set_pidfile)
 				pidfile = strdup(par);
-		}
-		else if (strcasecmp(cmd, "devname") == 0)
-		{
-			if (!set_dev_name)
-				pcm_name = strdup(par);
 		}
 		else if (strcasecmp(cmd, "detect_level") == 0)
 		{
@@ -913,7 +902,6 @@ int main(int argc, char *argv[])
 	if (silent == 0)
 	{
 		printf("Path:          %s\n", wav_path);
-		printf("Device:        %s\n", pcm_name);
 		printf("Level:         %d\n", detect_level);
 		printf("Min duration:  %f\n", min_duration);
 		printf("Max duration:  %f\n", max_duration);
@@ -931,7 +919,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* open audio-device */
-	pcm_handle = init_alsa(pcm_name, &sample_rate, channels);
+	pcm_handle = init_pulse(sample_rate, channels);
 
 	if (!silent)
 		printf("Samplerate:    %d\n", sample_rate);
